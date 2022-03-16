@@ -1,0 +1,75 @@
+{
+  "name": "pod-example",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-etherscan": "^2.1.5",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@types/chai": "^4.2.22",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.10.9",
+    "chai": "^4.3.4",
+    "dotenv": "^10.0.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.4.1",
+    "eslint-plugin-promise": "^5.1.0",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.6.0",
+    "hardhat": "^2.6.1",
+    "hardhat-gas-reporter": "^1.0.4",
+    "husky": "^7.0.2",
+    "lint-staged": "^11.2.3",
+    "npm-run-all": "^4.1.5",
+    "poddb-evm-sdk-ts": "^1.0.448",
+    "prettier": "^2.3.2",
+    "prettier-plugin-solidity": "^1.0.0-beta.13",
+    "run-all": "^1.0.1",
+    "solhint": "^3.3.6",
+    "solidity-coverage": "^0.7.17",
+    "ts-node": "^10.3.0",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.4.4"
+  },
+  "scripts": {
+    "build": "tsc",
+    "rank": "ts-node ./src/userRank.ts",
+    "airdrop": "ts-node ./src/airdrop.ts",
+    "start": "ts-node ./src/index.ts",
+    "compile": "npx hardhat compile",
+    "deploy": "yarn deploy:bscTestnet",
+    "deploy:localhost": "npx hardhat run scripts/deploy.ts --network localhost",
+    "deploy:rinkeby": "npx hardhat run scripts/deploy.ts --network rinkeby",
+    "deploy:bsc": "npx hardhat run scripts/deploy.ts --network bsc",
+    "deploy:bscTestnet": "npx hardhat run scripts/deploy.ts --network bscTestnet",
+    "fix:lint": "eslint --fix",
+    "fix:prettier:ts": "prettier --write 'src/**/*.ts'",
+    "fix:prettier:contract": "npx prettier '**/*.{json,sol,md}' --write",
+    "fix": "run-p fix:lint fix:prettier:contract fix:prettier:ts",
+    "test": "yarn compile & mocha ./test/*.ts",
+    "localnode": "npx hardhat node"
+  },
+  "mocha": {
+    "require": [
+      "ts-node/register",
+      "tsconfig-paths/register"
+    ],
+    "ui": "bdd"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  }
+}
