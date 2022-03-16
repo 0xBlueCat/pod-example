@@ -25,7 +25,7 @@ npx hardhat run scripts/deploy.ts --network bsc
 部署BSC测试环境
 npx hardhat run scripts/deploy.ts --network bscTestnet
 
-#运行
+# 运行
 
 配置参数
 src/airdrop.ts 
