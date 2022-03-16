@@ -26,6 +26,7 @@ npx hardhat run scripts/deploy.ts --network bsc
 npx hardhat run scripts/deploy.ts --network bscTestnet
 
 #运行
+
 配置参数
 src/airdrop.ts 
 ```typescript
