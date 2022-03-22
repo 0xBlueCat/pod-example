@@ -45,6 +45,7 @@ contract Airdrop is Ownable {
     );
 
     event UserActivate(bytes18 indexed tagClassId, address indexed user);
+    event UserInit(bytes18 indexed tagClassId, address[] users);
 
     constructor(
         address tagClassContractAddress,
@@ -74,19 +75,61 @@ contract Airdrop is Ownable {
         emit NewAirdropContract(address(this), ActivatedTagClassId);
     }
 
+    function userInit(address[] calldata users) public onlyOwner {
+        WriteBuffer.buffer memory buf;
+        bytes memory data = buf.init(1).writeUint8(0).getBytes();
+        ITag.SetTagParams[] memory params = new ITag.SetTagParams[](
+            users.length
+        );
+        for (uint256 i = 0; i < users.length; i++) {
+            IPodCore.TagObject memory object;
+            object.Type = IPodCore.ObjectType.Address;
+            object.Address = bytes20(msg.sender);
+
+            require(
+                !TagContract.hasTag(ActivatedTagClassId, object),
+                "User has already init"
+            );
+
+            ITag.SetTagParams memory param;
+            param.Object = object;
+            param.Data = data;
+            param.TagClassId = ActivatedTagClassId;
+            params[i] = param;
+        }
+
+        TagContract.batchSetTags(params);
+        emit UserInit(ActivatedTagClassId, users);
+    }
+
     function activate() public {
+        IPodCore.TagObject memory object;
+        object.Type = IPodCore.ObjectType.Address;
+        object.Address = bytes20(msg.sender);
+
+        bytes memory data = TagContract.getTagData(ActivatedTagClassId, object);
+        require(data.length > 0, "Haven't init");
+
+        ReadBuffer.buffer memory buffer = ReadBuffer.fromBytes(data);
+        require(buffer.readUint8() == 0, "Has already activated");
+
         if (_PLCFee > 0) {
             _PLC.transferFrom(msg.sender, owner(), _PLCFee);
         }
 
         WriteBuffer.buffer memory buf;
-        bytes memory data = buf.init(1).writeUint8(1).getBytes();
-        IPodCore.TagObject memory object;
-        object.Type = IPodCore.ObjectType.Address;
-        object.Address = bytes20(msg.sender);
+        data = buf.init(1).writeUint8(1).getBytes();
+
         TagContract.setTag(ActivatedTagClassId, object, data, 0);
 
         emit UserActivate(ActivatedTagClassId, msg.sender);
+    }
+
+    function isInit(address account) public view returns (bool) {
+        IPodCore.TagObject memory object;
+        object.Type = IPodCore.ObjectType.Address;
+        object.Address = bytes20(account);
+        return TagContract.hasTag(ActivatedTagClassId, object);
     }
 
     function isActivate(address account) public view returns (bool) {
@@ -94,8 +137,23 @@ contract Airdrop is Ownable {
         object.Type = IPodCore.ObjectType.Address;
         object.Address = bytes20(account);
         bytes memory data = TagContract.getTagData(ActivatedTagClassId, object);
+        if (data.length == 0) {
+            return false;
+        }
         ReadBuffer.buffer memory buffer = ReadBuffer.fromBytes(data);
         return buffer.readUint8() == 1;
+    }
+
+    function getActivateTag(address account) public view returns (uint8, bool) {
+        IPodCore.TagObject memory object;
+        object.Type = IPodCore.ObjectType.Address;
+        object.Address = bytes20(account);
+        bytes memory data = TagContract.getTagData(ActivatedTagClassId, object);
+        if (data.length == 0) {
+            return (0, false);
+        }
+        ReadBuffer.buffer memory buffer = ReadBuffer.fromBytes(data);
+        return (buffer.readUint8(), true);
     }
 
     function transferActivatedTagClassOwner(address newOwner) public onlyOwner {
