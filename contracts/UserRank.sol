@@ -120,6 +120,9 @@ contract UserRank is Ownable {
         object.Address = bytes20(account);
 
         bytes memory data = TagContract.getTagData(UserRankTagClassId, object);
+        if (data.length == 0) {
+            return 0;
+        }
         ReadBuffer.buffer memory buffer = ReadBuffer.fromBytes(data);
         return buffer.readUint8();
     }
