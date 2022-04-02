@@ -84,7 +84,7 @@ contract Airdrop is Ownable {
         for (uint256 i = 0; i < users.length; i++) {
             IPodCore.TagObject memory object;
             object.Type = IPodCore.ObjectType.Address;
-            object.Address = bytes20(msg.sender);
+            object.Address = bytes20(users[i]);
 
             require(
                 !TagContract.hasTag(ActivatedTagClassId, object),
